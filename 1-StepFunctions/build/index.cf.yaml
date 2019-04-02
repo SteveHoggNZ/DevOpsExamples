@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Step Function Examples
+Globals:
+  Function:
+    Environment:
+      Variables:
+        ENV:
+          Ref: Env
+        REGION:
+          Ref: AWS::Region
+        SERVICE_NAME:
+          Ref: ServiceName
+    MemorySize: 128
+    Runtime: nodejs8.10
+    Timeout: 30
+Outputs:
+  GetWelcome:
+    Export:
+      Name:
+        Fn::Sub: ${ServiceName}-${Env}-GetWelcome
+    Value:
+      Fn::GetAtt:
+      - GetWelcome
+      - Arn
+  LambdaServiceRole:
+    Export:
+      Name:
+        Fn::Sub: ${ServiceName}-${Env}-LambdaServiceRole
+    Value:
+      Fn::GetAtt:
+      - LambdaServiceRole
+      - Arn
+Parameters:
+  Env:
+    Description: The environment name. e.g. dev, prod.
+    Type: String
+  ServiceName:
+    Default: sf-examples
+    Description: The service name.
+    Type: String
+Resources:
+  GetWelcome:
+    Properties:
+      CodeUri: s3://h4-sandpit-tmp/0f015f1866b758a9eaef274d7b0b11e8
+      Handler: src/handler.getWelcome
+      Role:
+        Fn::GetAtt:
+        - LambdaServiceRole
+        - Arn
+    Type: AWS::Serverless::Function
+  LambdaServiceRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+        Version: '2012-10-17'
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Type: AWS::IAM::Role
+Transform: AWS::Serverless-2016-10-31

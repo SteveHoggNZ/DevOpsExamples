@@ -1,0 +1,3 @@
+SERVICE_NAME=sf-examples
+ENV=dev
+DEPLOYMENT_BUCKET=h4-sandpit-tmp
