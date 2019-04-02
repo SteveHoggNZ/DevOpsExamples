@@ -1,24 +1,22 @@
-const randomIndex = max => Math.floor(Math.random() * max)
-
-const messages = ['Hello World', 'Welcome', 'Sawubona Umhlaba']
-
-export class WelcomeError extends Error {
-  constructor (message) {
-    super()
-    this.name = 'WelcomeError'
-    this.message = message
-  }
-}
+import * as welcome from './lib/welcome'
 
 export const getWelcome = async (event, context, callback) => {
   try {
-    const message = messages[randomIndex(10)]
-    if (!message) {
-      throw new WelcomeError('Could not get welcome')
-    }
+    const message = welcome.get()
     callback(null, { message })
   } catch (e) {
     console.error(e)
     callback(e)
+  }
+}
+
+export const getWelcomeHttp = async (event, context, callback) => {
+  try {
+    const message = welcome.get()
+    callback(null, { statusCode: 200, body: JSON.stringify({ message }) })
+  } catch (e) {
+    console.error(e)
+    const { statusCode, message: error } = e
+    callback(null, { statusCode, body: JSON.stringify({ error }) })
   }
 }

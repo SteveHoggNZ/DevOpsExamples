@@ -41,8 +41,23 @@ Parameters:
 Resources:
   GetWelcome:
     Properties:
-      CodeUri: s3://h4-sandpit-tmp/0f015f1866b758a9eaef274d7b0b11e8
+      CodeUri: s3://h4-sandpit-tmp/c2e76e314e2c87061b75724083b59b2c
       Handler: src/handler.getWelcome
+      Role:
+        Fn::GetAtt:
+        - LambdaServiceRole
+        - Arn
+    Type: AWS::Serverless::Function
+  GetWelcomeEndpoint:
+    Properties:
+      CodeUri: s3://h4-sandpit-tmp/c2e76e314e2c87061b75724083b59b2c
+      Events:
+        HttpPost:
+          Properties:
+            Method: get
+            Path: /welcome
+          Type: Api
+      Handler: src/handler.getWelcomeHttp
       Role:
         Fn::GetAtt:
         - LambdaServiceRole

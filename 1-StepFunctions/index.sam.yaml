@@ -44,6 +44,19 @@ Resources:
       Handler: src/handler.getWelcome
       Role: !GetAtt LambdaServiceRole.Arn
 
+  GetWelcomeEndpoint:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      CodeUri: ./build/package.zip
+      Handler: src/handler.getWelcomeHttp
+      Role: !GetAtt LambdaServiceRole.Arn
+      Events:
+        HttpPost:
+          Type: Api
+          Properties:
+            Path: '/welcome'
+            Method: get
+
 Outputs:
   LambdaServiceRole:
     Value:
