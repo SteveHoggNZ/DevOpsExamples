@@ -2,7 +2,7 @@ import * as welcome from './lib/welcome'
 
 export const getWelcome = async (event, context, callback) => {
   try {
-    const message = welcome.get()
+    const message = await welcome.get()
     callback(null, { message })
   } catch (e) {
     console.error(e)
@@ -12,7 +12,7 @@ export const getWelcome = async (event, context, callback) => {
 
 export const getWelcomeHttp = async (event, context, callback) => {
   try {
-    const message = welcome.get()
+    const message = await welcome.get()
     callback(null, { statusCode: 200, body: JSON.stringify({ message }) })
   } catch (e) {
     console.error(e)

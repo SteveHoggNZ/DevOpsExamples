@@ -41,7 +41,7 @@ Parameters:
 Resources:
   GetWelcome:
     Properties:
-      CodeUri: s3://h4-sandpit-tmp/c2e76e314e2c87061b75724083b59b2c
+      CodeUri: s3://h4-sandpit-tmp/3b96cd4b01a2d564ac9115561d43e5f2
       Handler: src/handler.getWelcome
       Role:
         Fn::GetAtt:
@@ -50,7 +50,7 @@ Resources:
     Type: AWS::Serverless::Function
   GetWelcomeEndpoint:
     Properties:
-      CodeUri: s3://h4-sandpit-tmp/c2e76e314e2c87061b75724083b59b2c
+      CodeUri: s3://h4-sandpit-tmp/3b96cd4b01a2d564ac9115561d43e5f2
       Events:
         HttpPost:
           Properties:
