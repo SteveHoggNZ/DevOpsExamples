@@ -20,3 +20,14 @@ export const getWelcomeHttp = async (event, context, callback) => {
     callback(null, { statusCode, body: JSON.stringify({ error }) })
   }
 }
+
+export const getWelcomeWithRetry = async (event, context, callback) => {
+  try {
+    const message = await welcome.getWithRetry()
+    callback(null, { statusCode: 200, body: JSON.stringify({ message }) })
+  } catch (e) {
+    console.error(e)
+    const { statusCode, message: error } = e
+    callback(null, { statusCode, body: JSON.stringify({ error }) })
+  }
+}

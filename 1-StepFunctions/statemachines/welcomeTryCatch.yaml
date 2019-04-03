@@ -1,0 +1,46 @@
+StateMachineName:
+  Fn::Sub: ${Env}WelcomeTryCatch
+RoleArn:
+  Fn::GetAtt: StateMachineRole.Arn
+DefinitionString:
+  Fn::Sub: |
+    {
+      "Comment": "Welcome State Machine with try catch",
+      "StartAt": "Welcome",
+      "States": {
+        "Welcome": {
+          "Type": "Task",
+          "Resource": "${GetWelcome.Arn}",
+          "End": true,
+          "Catch": [
+            {
+              "ErrorEquals": ["WelcomeError"],
+              "Next": "CustomErrorFallback"
+            },
+            {
+              "ErrorEquals": ["States.TaskFailed"],
+              "Next": "ReservedTypeFallback"
+            },
+            {
+              "ErrorEquals": ["States.ALL"],
+              "Next": "CatchAllFallback"
+            }
+          ]
+        },
+        "CustomErrorFallback": {
+          "Type": "Pass",
+          "Result": "This is a fallback from a custom lambda function exception",
+          "End": true
+        },
+        "ReservedTypeFallback": {
+          "Type": "Pass",
+          "Result": "This is a fallback from a reserved error code",
+          "End": true
+        },
+        "CatchAllFallback": {
+          "Type": "Pass",
+          "Result": "This is a fallback from a reserved error code",
+          "End": true
+        }
+      }
+    }

@@ -41,7 +41,7 @@ Parameters:
 Resources:
   GetWelcome:
     Properties:
-      CodeUri: s3://h4-sandpit-tmp/c7fda44dbf5cb0a574c11e23448bd7d6
+      CodeUri: s3://h4-sandpit-tmp/cf0cecb578d582b1396400cdc0dbfc19
       Handler: src/handler.getWelcome
       Role:
         Fn::GetAtt:
@@ -50,12 +50,12 @@ Resources:
     Type: AWS::Serverless::Function
   GetWelcomeEndpoint:
     Properties:
-      CodeUri: s3://h4-sandpit-tmp/c7fda44dbf5cb0a574c11e23448bd7d6
+      CodeUri: s3://h4-sandpit-tmp/cf0cecb578d582b1396400cdc0dbfc19
       Events:
         HttpPost:
           Properties:
             Method: get
-            Path: /welcome/direct
+            Path: /welcome
           Type: Api
       Handler: src/handler.getWelcomeHttp
       Role:
@@ -65,7 +65,7 @@ Resources:
     Type: AWS::Serverless::Function
   GetWelcomeWithRetry:
     Properties:
-      CodeUri: s3://h4-sandpit-tmp/c7fda44dbf5cb0a574c11e23448bd7d6
+      CodeUri: s3://h4-sandpit-tmp/cf0cecb578d582b1396400cdc0dbfc19
       Environment:
         Variables:
           WELCOME_RETRY_STATE_MACHINE:
@@ -76,7 +76,7 @@ Resources:
         HttpPost:
           Properties:
             Method: get
-            Path: /welcome/retry
+            Path: /welcome/withretry
           Type: Api
       Handler: src/handler.getWelcomeWithRetry
       Role:
@@ -96,19 +96,20 @@ Resources:
         Version: '2012-10-17'
       ManagedPolicyArns:
       - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-      - Ref: StatesPolicy
     Type: AWS::IAM::Role
-  MyActivity:
-    Properties:
-      Name:
-        Fn::Sub: ${Env}MyActivity
-    Type: AWS::StepFunctions::Activity
-  MyActivityStateMachine:
+  WelcomeRetryStateMachine:
     Properties:
       Fn::Transform:
         Name: AWS::Include
         Parameters:
-          Location: s3://h4-sandpit-tmp/31f0b3227dfadd2e2dda26ddd1a92346
+          Location: s3://h4-sandpit-tmp/3eb58c27f2db6be7d8261e572c7f9cae
+    Type: AWS::StepFunctions::StateMachine
+  WelcomeStateMachine:
+    Properties:
+      Fn::Transform:
+        Name: AWS::Include
+        Parameters:
+          Location: s3://h4-sandpit-tmp/c5c2f6d719b2f11b2fca338993229b3d
     Type: AWS::StepFunctions::StateMachine
   StateMachineRole:
     Properties:
@@ -131,56 +132,18 @@ Resources:
           Version: '2012-10-17'
         PolicyName: WelcomeStateMachinePolicy
     Type: AWS::IAM::Role
-  StatesPolicy:
-    Properties:
-      PolicyDocument:
-        Statement:
-        - Action:
-          - states:DescribeExecution
-          - states:StartExecution
-          Effect: Allow
-          Resource: '*'
-        Version: '2012-10-17'
-    Type: AWS::IAM::ManagedPolicy
-  WakeStack2:
-    Properties:
-      Parameters:
-        Env:
-          Ref: Env
-        ServiceName:
-          Ref: ServiceName
-        StateMachineRoleArn:
-          Fn::GetAtt:
-          - StateMachineRole
-          - Arn
-      TemplateURL: https://s3.amazonaws.com/h4-sandpit-tmp/eb8c5cff3c9069ea8429f5fcd9190725.template
-    Type: AWS::CloudFormation::Stack
-  WelcomeRetryStateMachine:
-    Properties:
-      Fn::Transform:
-        Name: AWS::Include
-        Parameters:
-          Location: s3://h4-sandpit-tmp/8511fe837abe298033d99c5aef61fd1e
-    Type: AWS::StepFunctions::StateMachine
-  WelcomeStateMachine:
-    Properties:
-      Fn::Transform:
-        Name: AWS::Include
-        Parameters:
-          Location: s3://h4-sandpit-tmp/2bccb618cd765068b6a50574afe51bd4
-    Type: AWS::StepFunctions::StateMachine
   WelcomeTryCatchBulkStateMachine:
     Properties:
       Fn::Transform:
         Name: AWS::Include
         Parameters:
-          Location: s3://h4-sandpit-tmp/ca560455555c3473fe0640c9e19991d0
+          Location: s3://h4-sandpit-tmp/61666ff57b275167c52705ff0cfa4117
     Type: AWS::StepFunctions::StateMachine
   WelcomeTryCatchStateMachine:
     Properties:
       Fn::Transform:
         Name: AWS::Include
         Parameters:
-          Location: s3://h4-sandpit-tmp/f6d605f7aeb8510234774c4ca9878d19
+          Location: s3://h4-sandpit-tmp/8a33f8465f067559c3578a141ae74949
     Type: AWS::StepFunctions::StateMachine
 Transform: AWS::Serverless-2016-10-31

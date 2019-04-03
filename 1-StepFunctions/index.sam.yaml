@@ -23,6 +23,27 @@ Globals:
         REGION: !Ref AWS::Region
 
 Resources:
+  WakeStack2:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 2-wake.sam.yaml
+      Parameters:
+        ServiceName: !Ref ServiceName
+        Env: !Ref Env
+        StateMachineRoleArn: !GetAtt StateMachineRole.Arn
+
+  StatesPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: Allow
+          Action:
+            - states:DescribeExecution
+            - states:StartExecution
+          Resource: "*"
+
   LambdaServiceRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -36,6 +57,7 @@ Resources:
               - "sts:AssumeRole"
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - !Ref StatesPolicy
 
   GetWelcome:
     Type: "AWS::Serverless::Function"
@@ -54,8 +76,92 @@ Resources:
         HttpPost:
           Type: Api
           Properties:
-            Path: '/welcome'
+            Path: '/welcome/direct'
             Method: get
+
+  GetWelcomeWithRetry:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      CodeUri: ./build/package.zip
+      Handler: src/handler.getWelcomeWithRetry
+      Role: !GetAtt LambdaServiceRole.Arn
+      Events:
+        HttpPost:
+          Type: Api
+          Properties:
+            Path: '/welcome/retry'
+            Method: get
+      Environment:
+        Variables:
+          WELCOME_STATE_MACHINE: !Ref WelcomeStateMachine
+          WELCOME_RETRY_STATE_MACHINE: !Ref WelcomeRetryStateMachine
+
+  StateMachineRole:
+      Type: "AWS::IAM::Role"
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Principal:
+                Service:
+                  !Sub "states.${AWS::Region}.amazonaws.com"
+              Action:
+                - "sts:AssumeRole"
+        Policies:
+          - PolicyName: WelcomeStateMachinePolicy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - "lambda:InvokeFunction"
+                  Resource: "*"
+
+  MyActivity:
+    Type: "AWS::StepFunctions::Activity"
+    Properties:
+      Name: !Sub ${Env}MyActivity
+
+  MyActivityStateMachine:
+    Type: "AWS::StepFunctions::StateMachine"
+    Properties:
+      Fn::Transform:
+        Name: AWS::Include
+        Parameters:
+          Location: ./statemachines/myActivityTask.yaml
+
+  WelcomeStateMachine:
+    Type: "AWS::StepFunctions::StateMachine"
+    Properties:
+      Fn::Transform:
+        Name: AWS::Include
+        Parameters:
+          Location: ./statemachines/welcome.yaml
+
+  WelcomeRetryStateMachine:
+    Type: "AWS::StepFunctions::StateMachine"
+    Properties:
+      Fn::Transform:
+        Name: AWS::Include
+        Parameters:
+          Location: ./statemachines/welcomeRetry.yaml
+
+  WelcomeTryCatchStateMachine:
+    Type: "AWS::StepFunctions::StateMachine"
+    Properties:
+      Fn::Transform:
+        Name: AWS::Include
+        Parameters:
+          Location: ./statemachines/welcomeTryCatch.yaml
+
+  WelcomeTryCatchBulkStateMachine:
+    Type: "AWS::StepFunctions::StateMachine"
+    Properties:
+      Fn::Transform:
+        Name: AWS::Include
+        Parameters:
+          Location: ./statemachines/welcomeTryCatchBulk.yaml
 
 Outputs:
   LambdaServiceRole:

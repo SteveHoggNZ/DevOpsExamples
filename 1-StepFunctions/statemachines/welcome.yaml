@@ -1,0 +1,17 @@
+StateMachineName:
+  Fn::Sub: ${Env}Welcome
+RoleArn:
+  Fn::GetAtt: StateMachineRole.Arn
+DefinitionString:
+  Fn::Sub: |
+    {
+      "Comment": "Welcome State Machine",
+      "StartAt": "Welcome",
+      "States": {
+        "Welcome": {
+          "Type": "Task",
+          "Resource": "${GetWelcome.Arn}",
+          "End": true
+        }
+      }
+    }

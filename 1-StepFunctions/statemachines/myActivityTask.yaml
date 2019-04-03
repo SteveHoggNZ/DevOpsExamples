@@ -1,0 +1,17 @@
+StateMachineName:
+  Fn::Sub: ${Env}ActivityTask
+RoleArn:
+  Fn::GetAtt: StateMachineRole.Arn
+DefinitionString:
+  Fn::Sub: |
+    {
+      "Comment": "Activity Task State Machine",
+      "StartAt": "MyActivity",
+      "States": {
+        "MyActivity": {
+          "Type": "Task",
+          "Resource": "${MyActivity}",
+          "End": true
+        }
+      }
+    }

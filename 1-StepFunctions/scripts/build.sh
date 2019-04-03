@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 if [[ -z ${ENV} ]]; then
   echo "Error: ENV environment var is not set"

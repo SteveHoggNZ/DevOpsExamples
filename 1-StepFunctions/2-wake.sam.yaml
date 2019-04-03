@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Wake Example 2
+
+Parameters:
+  ServiceName:
+    Type: String
+    Description: The service name.
+  Env:
+    Type: String
+    Description: The environment name. e.g. dev, prod.
+  StateMachineRoleArn:
+    Type: String
+    Description: The ARN for the state machine role.
+
+Resources:
+  WakeUpAdvancedActivity:
+    Type: "AWS::StepFunctions::Activity"
+    Properties:
+      Name: !Sub ${Env}WakeUpAdvanced
+
+  WakeUpAdvancedStateMachine:
+    Type: "AWS::StepFunctions::StateMachine"
+    Properties:
+      Fn::Transform:
+        Name: AWS::Include
+        Parameters:
+          Location: ./statemachines/wakeUpAdvanced.yaml
+
+  WakeUpAdvancedTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: !Sub ${Env}WakeUpAdvanced
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST

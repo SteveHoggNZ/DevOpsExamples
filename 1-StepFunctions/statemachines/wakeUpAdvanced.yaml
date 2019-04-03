@@ -1,0 +1,41 @@
+StateMachineName:
+  Fn::Sub: ${Env}WakeUpAdvanced
+RoleArn:
+  Ref: StateMachineRoleArn
+DefinitionString:
+  Fn::Sub: |
+    {
+      "Comment": "Wake Up Advanced State Machine",
+      "StartAt": "Main",
+      "States": {
+        "Main": {
+          "Type": "Parallel",
+          "Next": "Finish",
+          "Branches": [
+            {
+              "StartAt": "Wait",
+              "States": {
+                "Wait": {
+                  "Type": "Wait",
+                  "Seconds": 30,
+                  "End": true
+                }
+              }
+            },
+            {
+              "StartAt": "WakeUpAdvanced",
+              "States": {
+                "WakeUpAdvanced": {
+                  "Type": "Task",
+                  "Resource": "${WakeUpAdvancedActivity}",
+                  "End": true
+                }
+              }
+            }
+          ]
+        },
+        "Finish": {
+          "Type": "Succeed"
+        }
+      }
+    }

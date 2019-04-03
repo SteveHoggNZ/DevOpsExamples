@@ -1,0 +1,58 @@
+StateMachineName:
+  Fn::Sub: ${Env}WelcomeTryCatchBulk
+RoleArn:
+  Fn::GetAtt: StateMachineRole.Arn
+DefinitionString:
+  Fn::Sub: |
+    {
+      "Comment": "Welcome State Machine with bulk actions and a try catch",
+      "StartAt": "Main",
+      "States": {
+        "Main": {
+          "Type": "Parallel",
+          "Next": "Finalise",
+          "Catch": [ {
+            "ErrorEquals": [ "States.ALL" ],
+            "ResultPath": "$.error",
+            "Next": "Finalise"
+          } ],
+          "Branches": [
+            {
+              "StartAt": "Welcome",
+              "States": {
+                "Welcome": {
+                  "Type": "Task",
+                  "Resource": "${GetWelcome.Arn}",
+                  "Next": "Wait"
+                },
+                "Wait": {
+                  "Type": "Wait",
+                  "Seconds": 1,
+                  "Next": "Welcome2"
+                },
+                "Welcome2": {
+                  "Type": "Task",
+                  "Resource": "${GetWelcome.Arn}",
+                  "End": true
+                }
+              }
+            },
+            {
+              "StartAt": "Welcome3",
+              "States": {
+                "Welcome3": {
+                  "Type": "Task",
+                  "Resource": "${GetWelcome.Arn}",
+                  "End": true
+                }
+              }
+            }
+          ]
+        },
+        "Finalise": {
+          "Type": "Pass",
+          "Result": "This is a fallback from a bulk try catch",
+          "End": true
+        }
+      }
+    }
