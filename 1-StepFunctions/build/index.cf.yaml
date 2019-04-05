@@ -41,7 +41,7 @@ Parameters:
 Resources:
   GetWelcome:
     Properties:
-      CodeUri: s3://h4-sandpit-tmp/c7fda44dbf5cb0a574c11e23448bd7d6
+      CodeUri: s3://h4-sandpit-tmp/0b37877fd11d8cda66866f3176390341
       Handler: src/handler.getWelcome
       Role:
         Fn::GetAtt:
@@ -50,7 +50,7 @@ Resources:
     Type: AWS::Serverless::Function
   GetWelcomeEndpoint:
     Properties:
-      CodeUri: s3://h4-sandpit-tmp/c7fda44dbf5cb0a574c11e23448bd7d6
+      CodeUri: s3://h4-sandpit-tmp/0b37877fd11d8cda66866f3176390341
       Events:
         HttpPost:
           Properties:
@@ -65,7 +65,7 @@ Resources:
     Type: AWS::Serverless::Function
   GetWelcomeWithRetry:
     Properties:
-      CodeUri: s3://h4-sandpit-tmp/c7fda44dbf5cb0a574c11e23448bd7d6
+      CodeUri: s3://h4-sandpit-tmp/0b37877fd11d8cda66866f3176390341
       Environment:
         Variables:
           WELCOME_RETRY_STATE_MACHINE:

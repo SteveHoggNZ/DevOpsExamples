@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: DevOps Example
+
+Parameters:
+  ServiceName:
+    Type: String
+    Default: devops-example
+    Description: The service name.
+  Env:
+    Type: String
+    Description: The environment name. e.g. dev, prod.
+
+Globals:
+  Function:
+    Runtime: nodejs8.10
+    Timeout: 30
+    MemorySize: 128
+    Environment:
+      Variables:
+        SERVICE_NAME: !Ref ServiceName
+        ENV: !Ref Env
+        REGION: !Ref AWS::Region
+
+Resources:
+  JobInitQueue:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      QueueName: !Sub "${Env}InitQueue"
+      VisibilityTimeout: 30
+      Tags:
+        - Key: Env
+          Value: !Ref Env
+        - Key: ApplicationName
+          Value: !Ref ServiceName
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt: [ JobInitDLQ, Arn ]
+        maxReceiveCount: 5
+
+  JobInitDLQ:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      QueueName: !Sub "${Env}InitDLQ"
+      VisibilityTimeout: 30
+      Tags:
+        - Key: Env
+          Value: !Ref Env
+        - Key: ApplicationName
+          Value: !Ref ServiceName
