@@ -61,6 +61,9 @@ const App = () => {
             }
           }
         })
+        .catch(e => {
+          console.log('initial search failed', e)
+        })
 
       // Subscribe to update of feature
       subscription = API.graphql(
@@ -89,7 +92,11 @@ const App = () => {
     tenantsJSON
   } = Auth.user.signInUserSession.idToken.payload
 
-  const tenants = (tenantsJSON && JSON.parse(tenantsJSON)) || []
+  const idTokenData = {
+    sub,
+    cognitoGroups,
+    ...tenantsJSON && { tenants: JSON.parse(tenantsJSON) }
+  }
 
   const headerStyle = {
     backgroundColor: themeColour
@@ -114,7 +121,7 @@ const App = () => {
         <JSONPretty
           id='json-pretty'
           style={{ textAlign: 'left' }}
-          data={{ sub, cognitoGroups, tenants }}
+          data={idTokenData}
         />
         <p>
           <button onClick={logout}>
