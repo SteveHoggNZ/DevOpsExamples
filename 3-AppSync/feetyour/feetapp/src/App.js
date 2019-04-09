@@ -86,8 +86,10 @@ const App = () => {
   const {
     sub,
     'cognito:groups': cognitoGroups,
-    tenants
-  } = Auth.user.signInUserSession.accessToken.payload
+    tenantsJSON
+  } = Auth.user.signInUserSession.idToken.payload
+
+  const tenants = (tenantsJSON && JSON.parse(tenantsJSON)) || []
 
   const headerStyle = {
     backgroundColor: themeColour

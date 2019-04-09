@@ -1,0 +1,4 @@
+SERVICE_NAME=feetyour-addons
+ENV=dev
+DEPLOYMENT_BUCKET=h4-demo-tmp
+USER_POOL=cognitoaaebb090_userpool_aaebb090-dev
