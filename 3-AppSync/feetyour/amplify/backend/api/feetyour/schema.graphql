@@ -1,0 +1,20 @@
+type Feature
+  @model
+  @auth(rules: [
+      {allow: groups, groups: ["Administrator"], queries: null, mutations: [create, update, delete]},
+      {allow: groups, groups: ["Guest","ReadOnly"], queries: [get, list], mutations: null}
+    ])
+  @searchable
+{
+  id: ID!
+  value: String!
+  type: String!
+}
+type Setting
+  @model
+  @auth(rules: [{allow: owner}])
+{
+  id: ID!
+  value: String!
+  type: String!
+}
