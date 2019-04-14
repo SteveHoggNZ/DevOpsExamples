@@ -93,7 +93,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getTenants", function() { return getTenants; });
 const getTenants = async (event, context, callback) => {
   try {
-    console.log('event', JSON.stringify(event));
     const tenantsJSON = JSON.stringify(['Customer 1', 'Customer 2']);
     const result = { ...event,
       response: { ...event.response,
@@ -104,7 +103,6 @@ const getTenants = async (event, context, callback) => {
         }
       }
     };
-    console.log('result', JSON.stringify(result));
     callback(null, result);
   } catch (e) {
     console.error(e);
