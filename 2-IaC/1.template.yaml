@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: DevOps Example 1
+
+Parameters:
+  ServiceName:
+    Type: String
+    Default: devops-example
+    Description: The service name.
+  Env:
+    Type: String
+    Description: The environment name. e.g. dev, prod.
+
+Resources:
+  JobInitQueue:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      QueueName: !Sub "${Env}InitQueue"
+      VisibilityTimeout: 30
