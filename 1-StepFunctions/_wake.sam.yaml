@@ -25,7 +25,7 @@ Resources:
       Fn::Transform:
         Name: AWS::Include
         Parameters:
-          Location: ./statemachines/wakeUpAdvanced.yaml
+          Location: ./statemachines/5-wakeUpAdvanced.yaml
 
   WakeUpAdvancedTable:
     Type: "AWS::DynamoDB::Table"

@@ -1,5 +1,5 @@
 StateMachineName:
-  Fn::Sub: ${Env}WelcomeRetry
+  Fn::Sub: 2-${Env}WelcomeRetry
 RoleArn:
   Fn::GetAtt: StateMachineRole.Arn
 DefinitionString:

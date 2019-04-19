@@ -1,16 +1,16 @@
 StateMachineName:
-  Fn::Sub: ${Env}ActivityTask
+  Fn::Sub: 1-${Env}Welcome
 RoleArn:
   Fn::GetAtt: StateMachineRole.Arn
 DefinitionString:
   Fn::Sub: |
     {
-      "Comment": "Activity Task State Machine",
-      "StartAt": "MyActivity",
+      "Comment": "Welcome State Machine",
+      "StartAt": "Welcome",
       "States": {
-        "MyActivity": {
+        "Welcome": {
           "Type": "Task",
-          "Resource": "${MyActivity}",
+          "Resource": "${GetWelcome.Arn}",
           "End": true
         }
       }

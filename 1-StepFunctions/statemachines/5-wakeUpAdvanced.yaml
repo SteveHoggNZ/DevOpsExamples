@@ -1,5 +1,5 @@
 StateMachineName:
-  Fn::Sub: ${Env}WakeUpAdvanced
+  Fn::Sub: 5-${Env}WakeUpAdvanced
 RoleArn:
   Ref: StateMachineRoleArn
 DefinitionString:

@@ -1,5 +1,5 @@
 StateMachineName:
-  Fn::Sub: ${Env}WelcomeTryCatch
+  Fn::Sub: 3-${Env}WelcomeTryCatch
 RoleArn:
   Fn::GetAtt: StateMachineRole.Arn
 DefinitionString:
