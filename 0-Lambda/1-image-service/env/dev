@@ -1,0 +1,4 @@
+PRODUCT_NAME=$( node -e 'console.log(require("./package.json").name)' )
+VERSION=$( node -e 'console.log(require("./package.json").version)' )
+ENV=dev
+DEPLOYMENT_BUCKET=h4-demo-tmp

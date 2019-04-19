@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Version Service
+
+Parameters:
+  ProductName:
+    Type: String
+    Description: The product name.
+  Env:
+    Type: String
+    Description: The environment name. e.g. dev, prod.
+  Version:
+    Type: String
+    Description: The software version.
+
+Globals:
+  Function:
+    Runtime: nodejs8.10
+    Timeout: 30
+    MemorySize: 128
+    Environment:
+      Variables:
+        PRODUCT_NAME: !Ref ProductName
+        VERSION: !Ref Version
+        ENV: !Ref Env
+        REGION: !Ref AWS::Region
+        AWS_XRAY_DEBUG_MODE: TRUE
+
+Resources:
+  GetVersion:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      CodeUri: ./build/package.zip
+      Handler: !Sub src/1-version-service.get
+      Role: !GetAtt LambdaServiceRole.Arn
+      Tracing: Active
+
+  GetVersionViaAPI:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      CodeUri: ./build/package.zip
+      Handler: src/1-version-service.getViaAPI
+      Role: !GetAtt LambdaServiceRole.Arn
+      Tracing: Active
+      Events:
+        HttpGet:
+          Type: Api
+          Properties:
+            Path: '/version'
+            Method: get
+
+  LambdaServiceRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+
+Outputs:
+  ApiId:
+    Value:
+      !Ref ServerlessRestApi
+  ApiUrl:
+    Value:
+      !Sub https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod

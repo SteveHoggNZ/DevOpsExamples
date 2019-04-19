@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Lambda Example
+
+Parameters:
+  # TODO: change to PRODUCT_NAME
+  ProductName:
+    Type: String
+    Description: The product name.
+  Env:
+    Type: String
+    Description: The environment name. e.g. dev, prod.
+  Version:
+    Type: String
+    Description: The software version.
+
+Globals:
+  Function:
+    Runtime: nodejs8.10
+    Timeout: 30
+    MemorySize: 128
+    Environment:
+      Variables:
+        PRODUCT_NAME: !Ref ProductName
+        VERSION: !Ref Version
+        ENV: !Ref Env
+        REGION: !Ref AWS::Region
+        IMAGES_BUCKET: !Ref ImagesBucket
+        AWS_XRAY_DEBUG_MODE: TRUE
+
+Resources:
+  VersionService:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 1-version-service.yaml
+      Parameters:
+        ProductName: !Ref ProductName
+        Env: !Ref Env
+        Version: !Ref Version
+
+  ImageService:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 2-image-service.yaml
+      Parameters:
+        ProductName: !Ref ProductName
+        Env: !Ref Env
+        VersionApi: !GetAtt VersionService.Outputs.ApiUrl

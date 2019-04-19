@@ -1,0 +1,88 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Image Service
+
+Parameters:
+  ProductName:
+    Type: String
+    Description: The product name.
+  Env:
+    Type: String
+    Description: The environment name. e.g. dev, prod.
+  VersionApi:
+    Type: String
+    Description: The software version API URL.
+
+Globals:
+  Function:
+    Runtime: nodejs8.10
+    Timeout: 30
+    MemorySize: 128
+    Environment:
+      Variables:
+        PRODUCT_NAME: !Ref ProductName
+        ENV: !Ref Env
+        REGION: !Ref AWS::Region
+        IMAGES_BUCKET: !Ref ImagesBucket
+        AWS_XRAY_DEBUG_MODE: TRUE
+        VERSION_API: !Ref VersionApi
+
+Resources:
+  ListImages:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      CodeUri: ./build/package.zip
+      Handler: src/2-image-service.list
+      Role: !GetAtt LambdaServiceRole.Arn
+      Tracing: Active
+
+      # AutoPublishAlias: prod
+
+  LambdaServiceRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - !Ref S3Policy
+
+  S3Policy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: Allow
+          Action:
+            - s3:ListBucket
+          Resource: !Sub "arn:aws:s3:::${ImagesBucket}"
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+            - s3:GetObjectAcl
+          Resource: !Sub "arn:aws:s3:::${ImagesBucket}/*"
+
+  ImagesBucket:
+    Type: AWS::S3::Bucket
+
+  # ImagesBucketPolicy:
+  #   Type: AWS::S3::BucketPolicy
+  #   Properties:
+  #     Bucket: !Ref "ImagesBucket"
+  #     PolicyDocument:
+  #       Statement:
+  #         -
+  #           Action:
+  #             - "s3:GetObject"
+  #           Effect: "Allow"
+  #           Resource: !Sub "arn:aws:s3:::${ImagesBucket}/*"
+  #           Principal: "*"
+  #           # "!Ref LambdaServiceRole
