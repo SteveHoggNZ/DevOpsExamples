@@ -5,11 +5,7 @@ amplify env list
 ```
 
 ```
-git checkout prod
-```
-
-```
-amplify env checkout prod
+amplify env checkout dev
 ```
 
 # Cognito Muti-Tenant Example
