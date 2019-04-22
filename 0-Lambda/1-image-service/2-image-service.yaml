@@ -23,9 +23,11 @@ Globals:
         PRODUCT_NAME: !Ref ProductName
         ENV: !Ref Env
         REGION: !Ref AWS::Region
-        IMAGES_BUCKET: !Ref ImagesBucket
-        AWS_XRAY_DEBUG_MODE: TRUE
+        # NOTE: avoid circular dependency by using name instead of reference
+        # IMAGES_BUCKET: !Ref ImagesBucket
+        IMAGES_BUCKET: !Sub "arn:aws:s3:::${Env}${ProductName}"
         VERSION_API: !Ref VersionApi
+        AWS_XRAY_DEBUG_MODE: "TRUE"
 
 Resources:
   ListImages:
@@ -36,7 +38,19 @@ Resources:
       Role: !GetAtt LambdaServiceRole.Arn
       Tracing: Active
 
-      # AutoPublishAlias: prod
+  ProcessImage:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      CodeUri: ./build/package.zip
+      Handler: src/2-image-service.process
+      Role: !GetAtt LambdaServiceRole.Arn
+      Tracing: Active
+      Events:
+        CreateThumbnailEvent:
+          Type: S3
+          Properties:
+            Bucket: !Ref ImagesBucket
+            Events: s3:ObjectCreated:*
 
   LambdaServiceRole:
     Type: "AWS::IAM::Role"
@@ -63,26 +77,17 @@ Resources:
         - Effect: Allow
           Action:
             - s3:ListBucket
-          Resource: !Sub "arn:aws:s3:::${ImagesBucket}"
+          # NOTE: avoid circular dependency by using name instead of reference
+          # Resource: !Sub "arn:aws:s3:::${ImagesBucket}"
+          Resource: !Sub "arn:aws:s3:::${Env}${ProductName}"
         - Effect: Allow
           Action:
             - s3:GetObject
             - s3:GetObjectAcl
-          Resource: !Sub "arn:aws:s3:::${ImagesBucket}/*"
+          # Resource: !Sub "arn:aws:s3:::${ImagesBucket}/*"
+          Resource: !Sub "arn:aws:s3:::${Env}${ProductName}/*"
 
   ImagesBucket:
     Type: AWS::S3::Bucket
-
-  # ImagesBucketPolicy:
-  #   Type: AWS::S3::BucketPolicy
-  #   Properties:
-  #     Bucket: !Ref "ImagesBucket"
-  #     PolicyDocument:
-  #       Statement:
-  #         -
-  #           Action:
-  #             - "s3:GetObject"
-  #           Effect: "Allow"
-  #           Resource: !Sub "arn:aws:s3:::${ImagesBucket}/*"
-  #           Principal: "*"
-  #           # "!Ref LambdaServiceRole
+    Properties:
+      BucketName: !Sub "${Env}${ProductName}"

@@ -9,3 +9,13 @@ export const list = async (event, context, callback) => {
     callback(e)
   }
 }
+
+export const process = async (event, context, callback) => {
+  try {
+    console.log('process', event)
+    callback(null, { status: 'ok' })
+  } catch (e) {
+    console.error(e)
+    callback(e)
+  }
+}

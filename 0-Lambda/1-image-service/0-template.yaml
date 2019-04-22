@@ -3,7 +3,6 @@ Transform: 'AWS::Serverless-2016-10-31'
 Description: Lambda Example
 
 Parameters:
-  # TODO: change to PRODUCT_NAME
   ProductName:
     Type: String
     Description: The product name.
@@ -13,20 +12,6 @@ Parameters:
   Version:
     Type: String
     Description: The software version.
-
-Globals:
-  Function:
-    Runtime: nodejs8.10
-    Timeout: 30
-    MemorySize: 128
-    Environment:
-      Variables:
-        PRODUCT_NAME: !Ref ProductName
-        VERSION: !Ref Version
-        ENV: !Ref Env
-        REGION: !Ref AWS::Region
-        IMAGES_BUCKET: !Ref ImagesBucket
-        AWS_XRAY_DEBUG_MODE: TRUE
 
 Resources:
   VersionService:

@@ -24,7 +24,7 @@ Globals:
         VERSION: !Ref Version
         ENV: !Ref Env
         REGION: !Ref AWS::Region
-        AWS_XRAY_DEBUG_MODE: TRUE
+        AWS_XRAY_DEBUG_MODE: "TRUE"
 
 Resources:
   GetVersion:
@@ -48,6 +48,25 @@ Resources:
           Properties:
             Path: '/version'
             Method: get
+
+  GetVersionedVersion:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      CodeUri: ./build/package.zip
+      Handler: !Sub src/1-version-service.get
+      Role: !GetAtt LambdaServiceRole.Arn
+      Tracing: Active
+      AutoPublishAlias: prod
+      # DeploymentPreference:
+      #  Type: Canary10Percent10Minutes
+      #  Alarms:
+      #    # A list of alarms that you want to monitor
+      #    - !Ref AliasErrorMetricGreaterThanZeroAlarm
+      #    - !Ref LatestVersionErrorMetricGreaterThanZeroAlarm
+      #  Hooks:
+      #    # Validation Lambda functions that are run before & after traffic shifting
+      #    PreTraffic: !Ref PreTrafficLambdaFunction
+      #    PostTraffic: !Ref PostTrafficLambdaFunction
 
   LambdaServiceRole:
     Type: "AWS::IAM::Role"

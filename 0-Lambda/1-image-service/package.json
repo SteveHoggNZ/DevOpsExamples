@@ -1,12 +1,14 @@
 {
   "name": "image-service",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
     "webpack": "mkdir -p build ; node_modules/webpack/bin/webpack.js --config config/webpack.config.js --progress",
     "build": "scripts/build.sh",
-    "deploy": "npm run build && scripts/deploy.sh"
+    "deploy": "npm run build && scripts/deploy.sh",
+    "start-function-1": "sam local invoke -d 5858 GetVersionViaAPI",
+    "start-api-1": "sam local start-api --template 1-version-service.yaml -d 5858"
   },
   "author": "",
   "license": "ISC",
