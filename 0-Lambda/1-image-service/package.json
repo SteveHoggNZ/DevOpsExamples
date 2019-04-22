@@ -28,6 +28,7 @@
   "dependencies": {
     "aws-xray-sdk": "^2.2.0",
     "http": "0.0.0",
-    "node-fetch": "^2.3.0"
+    "node-fetch": "^2.3.0",
+    "uuid4": "^1.1.4"
   }
 }

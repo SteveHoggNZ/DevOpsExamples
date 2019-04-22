@@ -1,21 +1,36 @@
+import uuid from 'uuid4'
 import * as images from './lib/images'
 
-export const list = async (event, context, callback) => {
+let id
+
+export const process = async (event, context, callback) => {
   try {
-    const list = await images.list()
-    callback(null, { list })
+    if (!id) {
+      id = uuid()
+    }
+    console.log('LAMBDA ID', id)
+    console.log('PROCESS EVENT', JSON.stringify(event))
+    callback(null, { status: 'ok' })
   } catch (e) {
     console.error(e)
     callback(e)
   }
 }
 
-export const process = async (event, context, callback) => {
+export const list = async (event, context, callback) => {
   try {
-    console.log('process', event)
-    callback(null, { status: 'ok' })
+    const list = await images.list()
+    const response = {
+      statusCode: 200,
+      body: JSON.stringify({ list })
+    }
+    callback(null, response)
   } catch (e) {
     console.error(e)
-    callback(e)
+    const response = {
+      statusCode: 500,
+      body: JSON.stringify({ error: e.message })
+    }
+    callback(null, response)
   }
 }

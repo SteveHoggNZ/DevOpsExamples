@@ -13,6 +13,19 @@ Parameters:
     Type: String
     Description: The software version.
 
+Globals:
+  Function:
+    Runtime: nodejs8.10
+    Timeout: 30
+    MemorySize: 128
+    Environment:
+      Variables:
+        PRODUCT_NAME: !Ref ProductName
+        VERSION: !Ref Version
+        ENV: !Ref Env
+        REGION: !Ref AWS::Region
+        AWS_XRAY_DEBUG_MODE: "TRUE"
+
 Resources:
   VersionService:
     Type: AWS::CloudFormation::Stack

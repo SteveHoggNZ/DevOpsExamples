@@ -1,4 +1,4 @@
-import AWS, { AWSXRay, http } from './util'
+import AWS, { captureAsyncFunc, http } from './util'
 
 const getVersion = () => http.get(`${process.env.VERSION_API}/version`)
 
@@ -11,31 +11,26 @@ const getRandomInt = (min, max) => {
 }
 
 const getRandomIntWithFailure = async () => {
-  // const subsegment = AWSXRay.beginSubsegment('Get Random Int')
-
   const int = getRandomInt(1, 3000)
 
   await new Promise((resolve, reject) => {
     setTimeout(() => resolve(), int)
   })
-  // try {
-    if (int > 2000) {
-      throw new Error('Random Integer Failure')
-    }
-  // } catch (e) {
-  //   subsegment.addException(e)
-  //   throw e
-  // } finally {
-  //   AWSXRay.endSubsegment()
-  // }
+  if (int > 2000) {
+    throw new Error('Random Integer Failure')
+  }
 
   return int
 }
 
 export const list = async () => {
-  const version = JSON.parse(await getVersion())
+  const { version } = JSON.parse(await getVersion())
 
-  const randomInt = await getRandomIntWithFailure()
+  // const randomInt = await getRandomIntWithFailure()
+  const randomInt = await captureAsyncFunc(
+    'getRandomInt',
+    segment => getRandomIntWithFailure()
+  )
 
   const photos = JSON.parse(await getPhotos())
   const photoCount = photos.length

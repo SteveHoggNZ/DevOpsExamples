@@ -22,7 +22,7 @@ set -euxo pipefail
 
 source "${ENV_FILE}"
 
-aws cloudformation package --template-file 0-template.yaml \
+aws cloudformation package --template-file template.yaml \
   --s3-bucket ${DEPLOYMENT_BUCKET} \
   --output-template-file ./build/template.cf.yaml
 

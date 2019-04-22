@@ -40,6 +40,23 @@ const http = {
   }
 }
 
-export { AWSXRay, AWS, http }
+const captureAsyncFunc = (name, func) => {
+  return new Promise(function (resolve, reject) {
+    AWSXRay.captureAsyncFunc(name, segment => {
+      func(segment).then(
+        (result) => {
+          segment.close()
+          resolve(result)
+        },
+        (error) => {
+          segment.close(error)
+          reject(error)
+        }
+      )
+    })
+  })
+}
+
+export { AWSXRay, captureAsyncFunc, AWS, http }
 
 export default AWS
