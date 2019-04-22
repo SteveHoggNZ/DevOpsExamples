@@ -41,14 +41,14 @@ const http = {
 }
 
 const captureAsyncFunc = (name, func) => {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     AWSXRay.captureAsyncFunc(name, segment => {
       func(segment).then(
-        (result) => {
+        result => {
           segment.close()
           resolve(result)
         },
-        (error) => {
+        error => {
           segment.close(error)
           reject(error)
         }
