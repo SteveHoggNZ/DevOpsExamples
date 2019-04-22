@@ -1,3 +1,0 @@
-SERVICE_NAME=lambda-deploy
-ENV=dev
-DEPLOYMENT_BUCKET=h4-demo-tmp
