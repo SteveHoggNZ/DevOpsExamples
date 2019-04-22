@@ -1,0 +1,107 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Image Service
+
+Parameters:
+  ProductName:
+    Type: String
+    Description: The product name.
+  Env:
+    Type: String
+    Description: The environment name. e.g. dev, prod.
+  VersionApi:
+    Type: String
+    Description: The software version API URL.
+
+Globals:
+  Function:
+    Runtime: nodejs8.10
+    Timeout: 30
+    MemorySize: 128
+    Environment:
+      Variables:
+        PRODUCT_NAME: !Ref ProductName
+        ENV: !Ref Env
+        REGION: !Ref AWS::Region
+        # NOTE: trigger circular dependency by using reference
+        IMAGES_BUCKET: !Ref ImagesBucket
+        # IMAGES_BUCKET: !Sub "${Env}${ProductName}"
+        VERSION_API: !Ref VersionApi
+        AWS_XRAY_DEBUG_MODE: "TRUE"
+
+Resources:
+  ListImages:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      CodeUri: ./build/package.zip
+      Handler: src/2-image-service.list
+      Role: !GetAtt LambdaServiceRole.Arn
+      Tracing: Active
+      Events:
+        HttpGet:
+          Type: Api
+          Properties:
+            Path: '/images'
+            Method: get
+
+  ProcessImage:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      CodeUri: ./build/package.zip
+      Handler: src/2-image-service.process
+      Role: !GetAtt LambdaServiceRole.Arn
+      Tracing: Active
+      Events:
+        CreateThumbnailEvent:
+          Type: S3
+          Properties:
+            Bucket: !Ref ImagesBucket
+            Events: s3:ObjectCreated:*
+
+  LambdaServiceRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - !Ref S3Policy
+
+  S3Policy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: Allow
+          Action:
+            - s3:ListBucket
+          # NOTE: trigger circular dependency by using reference
+          Resource: !Sub "arn:aws:s3:::${ImagesBucket}"
+          # Resource: !Sub "arn:aws:s3:::${Env}${ProductName}"
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+            - s3:GetObjectAcl
+          Resource: !Sub "arn:aws:s3:::${ImagesBucket}/*"
+          # Resource: !Sub "arn:aws:s3:::${Env}${ProductName}/*"
+
+  ImagesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${Env}${ProductName}"
+
+Outputs:
+  ApiId:
+    Value:
+      !Ref ServerlessRestApi
+  ApiUrl:
+    Value:
+      !Sub https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod

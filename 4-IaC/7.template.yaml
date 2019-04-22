@@ -1,0 +1,121 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: DevOps Example
+
+Parameters:
+  ServiceName:
+    Type: String
+    Default: devops-example
+    Description: The service name.
+  CostCenter:
+    Type: String
+    Default: General IT
+    Description: The service cost center.
+  Env:
+    Type: String
+    Description: The environment name. e.g. dev, prod.
+
+Globals:
+  Function:
+    Runtime: nodejs8.10
+    Timeout: 30
+    MemorySize: 128
+    Environment:
+      Variables:
+        SERVICE_NAME: !Ref ServiceName
+        ENV: !Ref Env
+        REGION: !Ref AWS::Region
+
+Resources:
+  JobInitQueue:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      QueueName: !Sub "${Env}InitQueue"
+      VisibilityTimeout: 30
+      Tags:
+        - Key: Env
+          Value: !Ref Env
+        - Key: ApplicationName
+          Value: !Ref ServiceName
+        - Key: CostCenter
+          Value: !Ref CostCenter
+      RedrivePolicy:
+        deadLetterTargetArn:
+          !GetAtt JobInitDLQ.Arn
+        maxReceiveCount: 5
+
+  JobInitDLQ:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      QueueName: !Sub "${Env}InitDLQ"
+      VisibilityTimeout: 30
+      Tags:
+        - Key: Env
+          Value: !Ref Env
+        - Key: ApplicationName
+          Value: !Ref ServiceName
+        - Key: CostCenter
+          Value: !Ref CostCenter
+
+  JobInitDLQAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "Job init DLQ has messages"
+      Namespace: "AWS/SQS"
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions:
+        - Name: QueueName
+          Value:
+            !GetAtt JobInitDLQ.QueueName
+      Statistic: Sum
+      Period: 300
+      Threshold: 0
+      EvaluationPeriods: 1
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+      OKActions:
+        - !Ref AlarmSNSTopic
+      TreatMissingData: missing
+
+  AlarmSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+        - Endpoint: steve@gmail.com
+          Protocol: email
+
+  JobBucketPublic:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: my-domain.nz
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: 404.html
+        RoutingRules:  # single page app configuration
+          - RedirectRule:
+              ReplaceKeyWith: index.html
+            RoutingRuleCondition:
+              KeyPrefixEquals: /
+      Tags:
+        - Key: Env
+          Value: !Ref Env
+        - Key: ApplicationName
+          Value: !Ref ServiceName
+        - Key: CostCenter
+          Value: !Ref CostCenter
+
+  JobBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref JobBucketPublic
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: PublicReadAccess
+            Effect: Allow
+            Principal: "*"
+            Action:
+              - s3:GetObject
+            Resource:
+              !Ref JobBucketPublic
